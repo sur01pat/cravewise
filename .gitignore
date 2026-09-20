@@ -36,6 +36,25 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# generated native folders
+# generated native folders (iOS stays ignored — Android is tracked)
 /ios
-/android
+
+# Android — ignore build outputs and secrets, track everything else
+/android/build/
+/android/app/build/
+/android/app/release/
+/android/.gradle/
+/android/app/debug.keystore
+# Release keystore lives outside the repo — never commit it
+/android/app/*.jks
+/android/app/*.keystore
+
+
+# Local env — contains machine-specific API URL; use .env.example as template
+.env
+
+# Expo export build output
+/build/
+
+# Android signing credentials — set locally, never commit
+/android/gradle.properties
