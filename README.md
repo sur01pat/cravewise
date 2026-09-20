@@ -7,17 +7,18 @@ A React Native / Expo nutrition app built on the **Abbey's Kitchen Hunger Crushi
 ## Table of Contents
 
 1. [Product Overview](#product-overview)
-2. [Architecture](#architecture)
-3. [Project Structure](#project-structure)
-4. [Tech Stack](#tech-stack)
-5. [Navigation](#navigation)
-6. [API & Backend](#api--backend)
-7. [Content Guardrails](#content-guardrails)
-8. [Ads (AdMob)](#ads-admob)
-9. [Local Development](#local-development)
-10. [Release Build](#release-build)
-11. [Environment Variables](#environment-variables)
-12. [Key Decisions & Notes](#key-decisions--notes)
+2. [About CraveWise](#about-cravewise)
+3. [Architecture](#architecture)
+4. [Project Structure](#project-structure)
+5. [Tech Stack](#tech-stack)
+6. [Navigation](#navigation)
+7. [API & Backend](#api--backend)
+8. [Content Guardrails](#content-guardrails)
+9. [Ads (AdMob)](#ads-admob)
+10. [Local Development](#local-development)
+11. [Release Build](#release-build)
+12. [Environment Variables](#environment-variables)
+13. [Key Decisions & Notes](#key-decisions--notes)
 
 ---
 
@@ -34,6 +35,69 @@ CraveWise provides five core user journeys:
 | **Explore** | Dynamic educational cards personalised to the user's recent history |
 
 Plus **Saved** (bookmarked combinations) and **Profile** (dietary preferences, allergies, cooking confidence).
+
+---
+
+## About CraveWise
+
+### Philosophy
+
+CraveWise is a **flexible nutrition app**, not a diet app. It is built on the principles of [Abbey Sharp's](https://www.abbeyskitchen.com) **Hunger Crushing Combo™** framework — the idea that satisfying, nourishing meals are built from a combination of protein, fat, and fibre-rich foods that work together to crush hunger and prevent the cycle of restriction and overeating. There are no calorie counts, no forbidden foods, and no guilt. The app meets users where they are — whether they're standing in front of an open fridge, scrolling a restaurant menu, or just feeling peckish at 10 pm.
+
+### The Hunger Crushing Combo Framework
+
+Every suggestion CraveWise generates is shaped by three pillars:
+
+- **Protein** — keeps you full and supports muscle maintenance (chicken, eggs, lentils, tofu, Greek yogurt…)
+- **Fat** — provides sustained energy and makes food satisfying (avocado, nuts, olive oil, cheese…)
+- **Fibre** — slows digestion, feeds gut bacteria, and prevents blood sugar spikes (vegetables, legumes, wholegrains, fruit…)
+
+The Gemini-powered backend is prompted to always recommend a combination that hits all three pillars, personalised to the user's dietary preference, allergies, dislikes, and cooking confidence — not just a generic healthy meal list.
+
+### Core Features
+
+#### 🍽 I'm Eating
+The user describes what they're currently eating or about to eat (e.g. "having toast for breakfast", "chicken stir fry for dinner"). CraveWise analyses the meal against the Hunger Crushing Combo framework and suggests what to **add, swap, or pair** to make it more satisfying and balanced — without throwing away what they already planned.
+
+#### 😋 I'm Hungry Now
+A guided five-step wizard that takes the guesswork out of meal decisions:
+1. **How hungry are you?** — a little hungry / hungry / very hungry
+2. **What's the context?** — breakfast / lunch / dinner / snack / late-night
+3. **How much time do you have?** — 5 min / 15 min / 30 min / 1 hr+
+4. **How much effort?** — zero effort / minimal / moderate / going all out
+5. **What are you craving?** — warm, cold, crunchy, creamy, savoury, sweet, spicy, or whatever
+
+The result is a personalised meal idea that respects the user's current energy level, available time, and craving type — all within the Hunger Crushing Combo structure.
+
+#### 🥦 Here's What I Have
+Users build a persistent pantry list of ingredients they have on hand. CraveWise suggests complete meals from those ingredients — reducing food waste and solving the classic "I have eggs, cheese, and half a bag of spinach — now what?" problem. The pantry is saved locally and persists across sessions.
+
+#### 🍜 Eating Out
+Designed for restaurant situations. The user enters what food or dish they're considering, optionally adds the cuisine type and occasion (e.g. "work lunch", "dinner date"), and CraveWise provides food-first advice on what to order, what to add, or what to pair to make the meal more satisfying — without restriction or calorie talk.
+
+#### 🌍 Explore
+A curated, AI-generated feed of short educational cards personalised to the user's dietary profile and recent meal history. Cards cover topics like understanding hunger signals, building a balanced breakfast, the role of fibre, eating out strategies, and more — all grounded in evidence-based, non-diet nutrition.
+
+#### 🔖 Saved
+Any recommended Hunger Crushing Combo can be bookmarked with a single tap. Saved combinations are stored locally and displayed in a dedicated tab so users can revisit their favourite meals.
+
+#### 👤 Profile
+Users set their personal context once and it is included with every API request:
+- **Dietary preference** — omnivore, vegetarian, vegan, pescatarian, gluten-free, etc.
+- **Allergies** — nut, dairy, shellfish, gluten, egg, soy, etc.
+- **Foods they dislike** — free-text; the AI will avoid them
+- **Cooking confidence** — beginner / home cook / confident cook
+- **Budget preference** — budget-friendly / mid-range / no limit
+
+### What CraveWise Is NOT
+
+- ❌ Not a calorie counter
+- ❌ Not a macro tracker
+- ❌ Not a weight-loss app
+- ❌ Not a meal-plan subscription
+- ❌ Not a recipe database
+
+It is a **conversational nutrition assistant** that gives contextual, personalised guidance in the moment — the food equivalent of asking a knowledgeable friend what they would eat.
 
 ---
 
