@@ -64,11 +64,9 @@ react {
 }
 
 /**
- * R8 minification and resource shrinking are always enabled in release builds.
- * This resolves the Play Store "DEX code optimization" advisory and reduces
- * APK/AAB size and memory footprint.
+ * Set this to true in release builds to optimize the app using [R8](https://developer.android.com/topic/performance/app-optimization/enable-app-optimization).
  */
-def enableMinifyInReleaseBuilds = true
+def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBuilds') ?: false).toBoolean()
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -94,8 +92,8 @@ android {
         applicationId 'com.cravewise.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "1.0.5"
+        versionCode 7
+        versionName "1.0.6"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
@@ -119,13 +117,10 @@ android {
         }
         release {
             signingConfig signingConfigs.release
-            // R8 full mode — shrinks, obfuscates and optimises the DEX bytecode.
-            // Required to satisfy the Play Store DEX optimisation advisory.
-            minifyEnabled true
-            // Remove unused resources (drawables, layouts, strings not referenced
-            // after R8 dead-code elimination). Requires minifyEnabled = true.
-            shrinkResources true
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
+            shrinkResources enableShrinkResources.toBoolean()
+            minifyEnabled enableMinifyInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()
         }
