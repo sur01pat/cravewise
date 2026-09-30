@@ -1,0 +1,21 @@
+<resources>
+  <!--
+    Android 15 (API 35) enforces edge-to-edge. Third-party libraries this app
+    depends on (React Native StatusBarModule, Google Material BottomSheetDialog,
+    Google Ads overlay) call the deprecated Window.setStatusBarColor /
+    setNavigationBarColor APIs internally — code we cannot change.
+
+    Setting windowOptOutEdgeToEdgeEnforcement="true" tells the OS that this app
+    takes full responsibility for edge-to-edge (via enableEdgeToEdge() in
+    MainActivity) and suppresses the Play Console deprecation warnings that stem
+    from those third-party callers. This is the Google-recommended escape hatch
+    while waiting for upstream libraries to migrate.
+
+    See: https://developer.android.com/about/versions/15/behavior-changes-15#edge-to-edge
+  -->
+  <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+    <item name="colorPrimary">@color/colorPrimary</item>
+    <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+  </style>
+</resources>

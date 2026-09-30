@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, Switch,
+  TextInput, Alert, Switch, Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { Colors, Typography, Spacing, Radii, Shadows } from '../../constants/theme';
 import { UserProfile, DietaryPreference, CookingConfidence } from '../../types';
 import { loadProfile, saveProfile, clearAllHistory, loadSaved } from '../../store/storage';
@@ -21,14 +22,34 @@ function isThisWeek(ts: number): boolean {
   return Date.now() - ts < 7 * 24 * 60 * 60 * 1000;
 }
 
+/** Returns up to 2 uppercase initials from the user's name. */
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 export default function ProfileScreen() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [reflection, setReflection] = useState<WeeklyReflectionResponse | null>(null);
   const [reflectionLoading, setReflectionLoading] = useState(false);
 
   useEffect(() => {
-    loadProfile().then(setProfile);
+    loadProfile().then((p) => {
+      setProfile(p);
+      setProfileLoaded(true);
+    }).catch(() => {
+      setProfile({
+        name: '', phone: '', photo: null,
+        dietaryPreference: 'omnivore', allergies: [], dislikes: [],
+        cookingConfidence: 'intermediate', typicalMealTimes: [],
+        budgetPreference: 'mid-range', savedCombinations: [], pantry: [],
+      });
+      setProfileLoaded(true);
+    });
   }, []);
 
   // Fetch weekly reflection whenever screen is focused
@@ -55,7 +76,7 @@ export default function ProfileScreen() {
     if (!profile) return;
     const updated = { ...profile, ...patch };
     setProfile(updated);
-    await saveProfile(patch);
+    await saveProfile(updated);
   }
 
   function toggleAllergy(allergy: string) {
@@ -66,6 +87,62 @@ export default function ProfileScreen() {
         ? current.filter((a) => a !== allergy)
         : [...current, allergy],
     });
+  }
+
+  async function handlePickPhoto() {
+    Alert.alert(
+      'Profile photo',
+      'Choose a source',
+      [
+        {
+          text: 'Camera',
+          onPress: async () => {
+            const perm = await ImagePicker.requestCameraPermissionsAsync();
+            if (!perm.granted) {
+              Alert.alert('Permission required', 'Camera access is needed to take a photo.');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: 'images',
+              cameraType: ImagePicker.CameraType.front,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.6,
+              base64: true,
+            });
+            if (!result.canceled && result.assets[0].base64) {
+              update({ photo: `data:image/jpeg;base64,${result.assets[0].base64}` });
+            }
+          },
+        },
+        {
+          text: 'Photo library',
+          onPress: async () => {
+            const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!perm.granted) {
+              Alert.alert('Permission required', 'Photo library access is needed to pick a photo.');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: 'images',
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.6,
+              base64: true,
+            });
+            if (!result.canceled && result.assets[0].base64) {
+              update({ photo: `data:image/jpeg;base64,${result.assets[0].base64}` });
+            }
+          },
+        },
+        {
+          text: 'Remove photo',
+          style: 'destructive',
+          onPress: () => update({ photo: null }),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    );
   }
 
   async function handleClearHistory() {
@@ -86,24 +163,72 @@ export default function ProfileScreen() {
     );
   }
 
+  if (!profileLoaded) return (
+    <View style={{ flex: 1, backgroundColor: Colors.background }} />
+  );
   if (!profile) return null;
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <Text style={styles.screenTitle}>Profile</Text>
 
-      {/* Name */}
+      {/* ── Avatar + photo picker ─────────────────────────── */}
+      <View style={styles.avatarSection}>
+        <TouchableOpacity
+          style={styles.avatarWrapper}
+          onPress={handlePickPhoto}
+          accessibilityLabel="Change profile photo"
+        >
+          {profile.photo ? (
+            <Image source={{ uri: profile.photo }} style={styles.avatarImage} />
+          ) : profile.name.trim() ? (
+            <View style={styles.avatarPlaceholder}>
+              <Text style={styles.avatarInitials}>{initials(profile.name)}</Text>
+            </View>
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons name="person" size={32} color={Colors.white} />
+            </View>
+          )}
+          <View style={styles.cameraChip}>
+            <Ionicons name="camera" size={13} color={Colors.white} />
+          </View>
+        </TouchableOpacity>
+        <View style={styles.avatarInfo}>
+          <Text style={styles.avatarName}>{profile.name || 'Your name'}</Text>
+          <Text style={styles.avatarPhone}>{profile.phone || 'Add mobile number'}</Text>
+        </View>
+      </View>
+
+      {/* ── Name ─────────────────────────────────────────── */}
       <Text style={styles.sectionLabel}>Your name (optional)</Text>
       <TextInput
-        style={styles.nameInput}
+        style={styles.fieldInput}
         value={profile.name}
         onChangeText={(t) => update({ name: t })}
-        placeholder="Add your name..."
+        placeholder="Add your name…"
         placeholderTextColor={Colors.textLight}
         accessibilityLabel="Your name"
+        returnKeyType="next"
       />
 
-      {/* Dietary preference */}
+      {/* ── Mobile number ─────────────────────────────────── */}
+      <Text style={styles.sectionLabel}>Mobile number (optional)</Text>
+      <View style={styles.phoneRow}>
+        <Ionicons name="call-outline" size={18} color={Colors.textLight} style={styles.phoneIcon} />
+        <TextInput
+          style={styles.phoneInput}
+          value={profile.phone}
+          onChangeText={(t) => update({ phone: t })}
+          placeholder="+1 555 000 0000"
+          placeholderTextColor={Colors.textLight}
+          keyboardType="phone-pad"
+          accessibilityLabel="Mobile number"
+          returnKeyType="done"
+        />
+      </View>
+
+      {/* ── Dietary preference ───────────────────────────── */}
       <Text style={styles.sectionLabel}>Dietary preference</Text>
       <View style={styles.chipRow}>
         {DIETARY_OPTIONS.map((d) => (
@@ -116,7 +241,7 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      {/* Allergies */}
+      {/* ── Allergies ────────────────────────────────────── */}
       <Text style={styles.sectionLabel}>Allergies & foods to avoid</Text>
       <Text style={styles.fieldNote}>These are treated as high priority — we'll never suggest these.</Text>
       <View style={styles.chipRow}>
@@ -130,7 +255,7 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      {/* Cooking confidence */}
+      {/* ── Cooking confidence ───────────────────────────── */}
       <Text style={styles.sectionLabel}>Cooking confidence</Text>
       <View style={styles.chipRow}>
         {CONFIDENCE_OPTIONS.map((c) => (
@@ -143,7 +268,7 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      {/* Budget */}
+      {/* ── Budget ───────────────────────────────────────── */}
       <Text style={styles.sectionLabel}>Budget preference</Text>
       <View style={styles.chipRow}>
         {(['budget', 'mid-range', 'flexible'] as const).map((b) => (
@@ -156,7 +281,7 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      {/* Notifications */}
+      {/* ── Notifications ────────────────────────────────── */}
       <View style={styles.settingRow}>
         <View style={styles.settingLabel}>
           <Ionicons name="notifications-outline" size={20} color={Colors.textMuted} />
@@ -174,7 +299,7 @@ export default function ProfileScreen() {
         />
       </View>
 
-      {/* Weekly reflection — from Gemini, based on real saved combinations */}
+      {/* ── Weekly reflection ────────────────────────────── */}
       <Text style={styles.sectionLabel}>This week's reflection</Text>
       {reflectionLoading ? (
         <View style={styles.reflectionCard}>
@@ -191,7 +316,7 @@ export default function ProfileScreen() {
         </View>
       ) : null}
 
-      {/* Privacy & data */}
+      {/* ── Privacy & data ───────────────────────────────── */}
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Privacy & data</Text>
         <TouchableOpacity
@@ -204,7 +329,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Disclaimer */}
+      {/* ── Disclaimer ───────────────────────────────────── */}
       <View style={styles.disclaimer}>
         <Ionicons name="information-circle-outline" size={16} color={Colors.textLight} />
         <Text style={styles.disclaimerText}>
@@ -218,6 +343,8 @@ export default function ProfileScreen() {
   );
 }
 
+const AVATAR_SIZE = 72;
+
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
   content: { paddingHorizontal: Spacing.md, paddingBottom: Spacing.xxl },
@@ -228,6 +355,70 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg,
     marginBottom: Spacing.lg,
   },
+
+  // ── Avatar section
+  avatarSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.lg,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+    gap: Spacing.md,
+    ...Shadows.sm,
+  },
+  avatarWrapper: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    position: 'relative',
+  },
+  avatarImage: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+  },
+  avatarPlaceholder: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    backgroundColor: Colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  avatarInitials: {
+    fontSize: Typography.fontSizeXL,
+    fontWeight: Typography.fontWeightBold,
+    color: Colors.primary,
+  },
+  cameraChip: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.white,
+  },
+  avatarInfo: { flex: 1 },
+  avatarName: {
+    fontSize: Typography.fontSizeLG,
+    fontWeight: Typography.fontWeightSemiBold,
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  avatarPhone: {
+    fontSize: Typography.fontSizeSM,
+    color: Colors.textMuted,
+  },
+
+  // ── Fields
   sectionLabel: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
@@ -243,7 +434,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
     lineHeight: 18,
   },
-  nameInput: {
+  fieldInput: {
     backgroundColor: Colors.surface,
     borderRadius: Radii.lg,
     borderWidth: 1.5,
@@ -253,6 +444,24 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSizeMD,
     color: Colors.text,
     marginBottom: Spacing.sm,
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.lg,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 12,
+    marginBottom: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  phoneIcon: { marginRight: 2 },
+  phoneInput: {
+    flex: 1,
+    fontSize: Typography.fontSizeMD,
+    color: Colors.text,
   },
   chipRow: {
     flexDirection: 'row',

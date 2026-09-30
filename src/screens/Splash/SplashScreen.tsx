@@ -4,12 +4,9 @@ import {
   Text,
   Animated,
   StyleSheet,
-  Dimensions,
-  StatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Colors, Typography, Spacing } from '../../constants/theme';
-
-const { width } = Dimensions.get('window');
 
 interface Props {
   onFinish: () => void;
@@ -99,7 +96,7 @@ export default function SplashScreen({ onFinish }: Props) {
 
   return (
     <Animated.View style={[styles.root, { opacity: bgOpacity }]}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      <StatusBar style="light" />
 
       {/* Logo mark */}
       <Animated.View

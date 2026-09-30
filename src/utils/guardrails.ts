@@ -64,6 +64,8 @@ const FOOD_ALLOWLIST: RegExp[] = [
   /\b(nut|nuts|seed|seeds|almond|almonds|walnut|walnuts|cashew|cashews|pecan|pecans|pistachio|peanut|peanuts|hazelnut|sunflower.?seed|pumpkin.?seed|chia|flaxseed|sesame|hemp.?seed)\b/i,
   // World cuisines & dishes
   /\b(pizza|burger|burgers|sushi|noodles|curry|curries|salad|salads|soup|soups|sandwich|sandwiches|wrap|wraps|taco|tacos|spaghetti|ramen|pho|dal|daal|chapati|stir.?fry|dumplings|gyoza|tapas|mezze|paella|risotto|falafel|shawarma|kebab|lasagne|lasagna|moussaka|tagine|biryani|pilaf|congee|bibimbap|pad.?thai|tom.?yum|tikka|masala|korma|vindaloo|chowder|gumbo|jambalaya|quesadilla|enchilada|burrito|nigiri|sashimi|tempura|udon|ravioli|gnocchi|ceviche|poke)\b/i,
+  // Cuisine names used as standalone meal selectors (e.g. chip picks in Eating Out)
+  /\b(thai|mexican|chinese|indian|italian|japanese|mediterranean|korean|french|greek|spanish|vietnamese|turkish|lebanese|moroccan|peruvian|american)\b/i,
   // Hunger, satiety & cravings (Abbey's framework core)
   /\b(hungry|hunger|craving|cravings|crave|satisfy|satisfying|satiety|satiated|full|fullness|appetite|thirst|snacky|peckish|famished|starving)\b/i,
   // Taste & texture

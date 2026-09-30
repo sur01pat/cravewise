@@ -123,7 +123,7 @@ export default function EatingOutScreen() {
       <View style={styles.chipRow}>
         {CUISINES.map((c) => (
           <Chip key={c} label={c} selected={cuisine === c}
-            onPress={() => { setCuisine(c); if (!food) setFood(c); }} />
+            onPress={() => { setCuisine(cuisine === c ? '' : c); clearError(); }} />
         ))}
       </View>
 

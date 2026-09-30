@@ -76,6 +76,8 @@ export type CookingConfidence = 'beginner' | 'intermediate' | 'confident';
 
 export interface UserProfile {
   name: string;
+  phone: string;
+  photo: string | null;   // base64 data URI or null
   dietaryPreference: DietaryPreference;
   allergies: string[];
   dislikes: string[];

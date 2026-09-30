@@ -5,8 +5,8 @@
   "expo": {
     "name": "CraveWise",
     "slug": "cravewise",
-    "version": "1.0.6",
-    "orientation": "portrait",
+    "version": "1.0.14",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "extra": {
@@ -19,7 +19,7 @@
     },
     "android": {
       "package": "com.cravewise.app",
-      "versionCode": 7,
+      "versionCode": 15,
       "adaptiveIcon": {
         "backgroundColor": "#E8743B",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -32,7 +32,14 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CraveWise uses your photo library to set your profile picture.",
+          "cameraPermission": "CraveWise uses your camera to take a profile photo."
+        }
+      ]
     ]
   }
 }

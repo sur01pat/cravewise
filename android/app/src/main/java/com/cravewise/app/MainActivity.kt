@@ -2,6 +2,8 @@ package com.cravewise.app
 
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
+import androidx.activity.enableEdgeToEdge
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -16,6 +18,13 @@ class MainActivity : ReactActivity() {
     // coloring the background, status bar, and navigation bar.
     // This is required for expo-splash-screen.
     setTheme(R.style.AppTheme);
+    // Enable edge-to-edge display using the modern AndroidX API (required for Android 15+).
+    enableEdgeToEdge()
+    // Use LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS to replace the deprecated SHORT_EDGES/DEFAULT modes.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      window.attributes.layoutInDisplayCutoutMode =
+        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+    }
     super.onCreate(null)
   }
 

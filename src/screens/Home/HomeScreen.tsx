@@ -1,22 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  StatusBar,
+  Image,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { CompositeNavigationProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radii, Shadows } from '../../constants/theme';
-import { HomeStackParamList } from '../../types';
+import { HomeStackParamList, RootTabParamList } from '../../types';
+import { loadProfile } from '../../store/storage';
 import { AdBanner } from '../../components/AdBanner';
 import { useAdsInitialized } from '../../../App';
 
-type Nav = NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>;
+type Nav = CompositeNavigationProp<
+  NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>,
+  BottomTabNavigationProp<RootTabParamList>
+>;
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 const PRIMARY_ACTIONS = [
   {
@@ -53,16 +67,32 @@ const PRIMARY_ACTIONS = [
   },
 ];
 
+const AVATAR_SIZE = 36;
+
 export default function HomeScreen() {
   const adsInitialized = useAdsInitialized();
   const navigation = useNavigation<Nav>();
+  const isFocused = useIsFocused();
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [name, setName] = useState('');
+
+  // Refresh avatar whenever this screen comes into focus
+  useEffect(() => {
+    if (isFocused) {
+      loadProfile().then((p) => {
+        setPhoto(p.photo ?? null);
+        setName(p.name ?? '');
+      });
+    }
+  }, [isFocused]);
+
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <StatusBar style="dark" />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -76,10 +106,20 @@ export default function HomeScreen() {
           </View>
           <TouchableOpacity
             style={styles.profileBtn}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('Profile')}
             accessibilityLabel="Profile"
           >
-            <Ionicons name="person-circle-outline" size={36} color={Colors.primary} />
+            {photo ? (
+              <Image source={{ uri: photo }} style={styles.profileAvatar} />
+            ) : name.trim() ? (
+              <View style={styles.profileAvatarPlaceholder}>
+                <Text style={styles.profileAvatarInitials}>{initials(name)}</Text>
+              </View>
+            ) : (
+              <View style={styles.profileAvatarPlaceholder}>
+                <Ionicons name="person" size={18} color={Colors.primary} />
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -153,6 +193,26 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   profileBtn: { padding: 4 },
+  profileAvatar: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+  },
+  profileAvatarPlaceholder: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    backgroundColor: Colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+  },
+  profileAvatarInitials: {
+    fontSize: Typography.fontSizeSM,
+    fontWeight: Typography.fontWeightBold,
+    color: Colors.primary,
+  },
   quickBanner: {
     flexDirection: 'row',
     alignItems: 'center',

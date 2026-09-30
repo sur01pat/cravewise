@@ -9,6 +9,8 @@ const KEYS = {
 
 const DEFAULT_PROFILE: UserProfile = {
   name: '',
+  phone: '',
+  photo: null,
   dietaryPreference: 'omnivore',
   allergies: [],
   dislikes: [],
