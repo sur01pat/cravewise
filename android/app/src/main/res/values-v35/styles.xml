@@ -5,17 +5,24 @@
     Google Ads overlay) call the deprecated Window.setStatusBarColor /
     setNavigationBarColor APIs internally — code we cannot change.
 
-    Setting windowOptOutEdgeToEdgeEnforcement="true" tells the OS that this app
-    takes full responsibility for edge-to-edge (via enableEdgeToEdge() in
-    MainActivity) and suppresses the Play Console deprecation warnings that stem
-    from those third-party callers. This is the Google-recommended escape hatch
-    while waiting for upstream libraries to migrate.
+    windowOptOutEdgeToEdgeEnforcement="true" must be present on EVERY theme that
+    an activity or the <application> tag references. The <activity> in the manifest
+    points to Theme.App.SplashScreen, while <application> points to AppTheme — so
+    both need the attribute to silence Play Console warnings from all call sites
+    (StatusBarModule, WindowUtilKt, Material BottomSheet, etc.).
 
     See: https://developer.android.com/about/versions/15/behavior-changes-15#edge-to-edge
   -->
   <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
     <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
     <item name="colorPrimary">@color/colorPrimary</item>
+    <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+  </style>
+
+  <!-- MainActivity uses this theme (via android:theme in the manifest).
+       It must also carry the opt-out flag on API 35+. -->
+  <style name="Theme.App.SplashScreen" parent="AppTheme">
+    <item name="android:windowBackground">@drawable/splashscreen_logo</item>
     <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
   </style>
 </resources>
